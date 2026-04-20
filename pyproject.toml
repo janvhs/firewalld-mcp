@@ -1,0 +1,19 @@
+[project]
+name = "firewalld-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jan Fooken", email = "jan.fooken@suse.com" }
+]
+requires-python = ">=3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = []
+
+[project.scripts]
+firewalld-mcp = "firewalld_mcp:main"
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"

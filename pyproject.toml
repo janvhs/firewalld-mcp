@@ -9,7 +9,9 @@ authors = [
 requires-python = ">=3.13"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-dependencies = []
+dependencies = [
+    "mcp>=1.27.0",
+]
 
 [dependency-groups]
 dev = [

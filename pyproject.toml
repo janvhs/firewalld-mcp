@@ -11,13 +11,6 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 dependencies = []
 
-[project.scripts]
-firewalld-mcp = "firewalld_mcp:main"
-
-[build-system]
-requires = ["hatchling >= 1.26"]
-build-backend = "hatchling.build"
-
 [dependency-groups]
 dev = [
     "pyrefly>=0.61.1",

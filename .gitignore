@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Go outputs
+/firewalld-mcp
+
+# Nix build outputs
+/result

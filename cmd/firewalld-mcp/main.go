@@ -45,6 +45,14 @@ type GetServicesForZoneResp struct {
 	Services []string
 }
 
+type IsDefaultZoneArgs struct {
+	Zone string `json:"zone" jsonschema:"Name of the firewall zone"`
+}
+
+type IsDefaultZoneResp struct {
+	IsDefaultZone bool
+}
+
 func main() {
 	flag.Parse()
 	if err := mainE(); err != nil {
@@ -108,6 +116,21 @@ func mainE() error {
 
 		return nil, &GetServicesForZoneResp{
 			Services: services,
+		}, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "is_default_zone",
+		Title:       "Is default zone",
+		Description: "Check whether the specified firewall zone is the default zone",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args IsDefaultZoneArgs) (*mcp.CallToolResult, *IsDefaultZoneResp, error) {
+		defaultZone, err := client.GetDefaultZone(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, &IsDefaultZoneResp{
+			IsDefaultZone: args.Zone == defaultZone,
 		}, nil
 	})
 

@@ -38,6 +38,7 @@ type Service struct {
 type FirewalldClient interface {
 	GetDefaultZone(context.Context) (string, error)
 	GetActiveZones(context.Context) ([]string, error)
+	GetServices(context.Context, string) ([]string, error)
 }
 
 var _ FirewalldClient = (*dbusClient)(nil)
@@ -81,4 +82,15 @@ func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
 	}
 
 	return zones, nil
+}
+
+func (c *dbusClient) GetServices(ctx context.Context, zone string) ([]string, error) {
+	method := dbusZoneInterface + ".getServices"
+
+	var services []string
+	if err := c.object.CallWithContext(ctx, method, 0, zone).Store(&services); err != nil {
+		return nil, err
+	}
+
+	return services, nil
 }

@@ -37,6 +37,14 @@ type GetActiveZonesResp struct {
 	ActiveZones []string
 }
 
+type GetServicesForZoneArgs struct {
+	Zone string `json:"zone" jsonschema:"Name of the firewall zone"`
+}
+
+type GetServicesForZoneResp struct {
+	Services []string
+}
+
 func main() {
 	flag.Parse()
 	if err := mainE(); err != nil {
@@ -85,6 +93,21 @@ func mainE() error {
 
 		return nil, &GetActiveZonesResp{
 			ActiveZones: zones,
+		}, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "get_services_for_zone",
+		Title:       "Get services for zone",
+		Description: "Get all allowed services of a firewall zone",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServicesForZoneArgs) (*mcp.CallToolResult, *GetServicesForZoneResp, error) {
+		services, err := client.GetServices(ctx, args.Zone)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, &GetServicesForZoneResp{
+			Services: services,
 		}, nil
 	})
 

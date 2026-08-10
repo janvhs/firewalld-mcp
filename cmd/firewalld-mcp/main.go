@@ -33,6 +33,10 @@ type GetDefaultZoneResp struct {
 	DefaultZone string
 }
 
+type GetActiveZonesResp struct {
+	ActiveZones []string
+}
+
 func main() {
 	flag.Parse()
 	if err := mainE(); err != nil {
@@ -66,6 +70,21 @@ func mainE() error {
 		}
 		return nil, &GetDefaultZoneResp{
 			DefaultZone: string(zone),
+		}, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "get_active_zones",
+		Title:       "Get active zones",
+		Description: "Get the names of all currently active firewall zones",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, *GetActiveZonesResp, error) {
+		zones, err := client.GetActiveZones(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, &GetActiveZonesResp{
+			ActiveZones: zones,
 		}, nil
 	})
 

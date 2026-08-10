@@ -35,10 +35,9 @@ type Destination struct {
 type Service struct {
 }
 
-type Zone string
-
 type FirewalldClient interface {
-	GetDefaultZone(context.Context) (Zone, error)
+	GetDefaultZone(context.Context) (string, error)
+	GetActiveZones(context.Context) ([]string, error)
 }
 
 var _ FirewalldClient = (*dbusClient)(nil)
@@ -55,12 +54,31 @@ func NewDBusClient(bus *dbus.Conn) FirewalldClient {
 	}
 }
 
-func (c *dbusClient) GetDefaultZone(ctx context.Context) (Zone, error) {
+func (c *dbusClient) GetDefaultZone(ctx context.Context) (string, error) {
 	method := dbusFirewallInterface + ".getDefaultZone"
-	var zone Zone
+
+	var zone string
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&zone); err != nil {
 		return "", err
 	}
 
 	return zone, nil
+}
+
+func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
+	method := dbusZoneInterface + ".getActiveZones"
+
+	// getActiveZones returns a{sa{sas}}, mapping each active zone name to
+	// its assigned interfaces and sources. Only the zone names are needed.
+	var activeZones map[string]any
+	if err := c.object.CallWithContext(ctx, method, 0).Store(&activeZones); err != nil {
+		return nil, err
+	}
+
+	zones := make([]string, 0, len(activeZones))
+	for zone := range activeZones {
+		zones = append(zones, zone)
+	}
+
+	return zones, nil
 }

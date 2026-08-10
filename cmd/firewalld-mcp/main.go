@@ -53,6 +53,14 @@ type IsDefaultZoneResp struct {
 	IsDefaultZone bool
 }
 
+type GetServiceInfoArgs struct {
+	Service string `json:"service" jsonschema:"Name of the service"`
+}
+
+type GetServiceInfoResp struct {
+	Info firewalld.Service
+}
+
 func main() {
 	flag.Parse()
 	if err := mainE(); err != nil {
@@ -131,6 +139,23 @@ func mainE() error {
 
 		return nil, &IsDefaultZoneResp{
 			IsDefaultZone: args.Zone == defaultZone,
+		}, nil
+	})
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:  "get_service_info",
+		Title: "Get service info",
+		Description: "Get information on the specified service, including its name, description, ports, " +
+			"destination addresses, protocols and source ports. When a service contains items in the includes " +
+			"field, you need to request data for each listed include.",
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServiceInfoArgs) (*mcp.CallToolResult, *GetServiceInfoResp, error) {
+		service, err := client.GetServiceInfo(ctx, args.Service)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return nil, &GetServiceInfoResp{
+			Info: service,
 		}, nil
 	})
 

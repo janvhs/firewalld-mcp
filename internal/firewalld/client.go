@@ -27,18 +27,31 @@ const (
 )
 
 type Port struct {
+	Port     string
+	Protocol string
 }
 
 type Destination struct {
+	IPFamily  string
+	IPAddress string
 }
 
 type Service struct {
+	Name        string
+	Short       string
+	Description string
+	Ports       []Port
+	Destination []Destination
+	Protocols   []string
+	SourcePorts []Port
+	Includes    []string
 }
 
 type FirewalldClient interface {
 	GetDefaultZone(context.Context) (string, error)
 	GetActiveZones(context.Context) ([]string, error)
 	GetServices(context.Context, string) ([]string, error)
+	GetServiceInfo(context.Context, string) (Service, error)
 }
 
 var _ FirewalldClient = (*dbusClient)(nil)
@@ -93,4 +106,50 @@ func (c *dbusClient) GetServices(ctx context.Context, zone string) ([]string, er
 	}
 
 	return services, nil
+}
+
+func (c *dbusClient) GetServiceInfo(ctx context.Context, service string) (Service, error) {
+	method := dbusFirewallInterface + ".getServiceSettings2"
+
+	// getServiceSettings2 returns a{sv}.
+	var settings map[string]dbus.Variant
+	if err := c.object.CallWithContext(ctx, method, 0, service).Store(&settings); err != nil {
+		return Service{}, err
+	}
+
+	info := Service{Name: service}
+
+	info.Short = mustStoreVariantMap(settings, "short", "")
+	info.Description = mustStoreVariantMap(settings, "description", "")
+	info.Ports = mustStoreVariantMap(settings, "ports", []Port{})
+	info.Protocols = mustStoreVariantMap(settings, "protocols", []string{})
+	info.SourcePorts = mustStoreVariantMap(settings, "source_ports", []Port{})
+	info.Includes = mustStoreVariantMap(settings, "includes", []string{})
+
+	destination := make([]Destination, 0)
+	rawDestination := mustStoreVariantMap(settings, "destination", map[string]string{})
+	for family, address := range rawDestination {
+		destination = append(destination, Destination{
+			IPFamily:  family,
+			IPAddress: address,
+		})
+	}
+	info.Destination = destination
+
+	return info, nil
+}
+
+func mustStoreVariantMap[T any](m map[string]dbus.Variant, key string, fallback T) T {
+	variant, ok := m[key]
+	if !ok {
+		return fallback
+	}
+
+	var v T
+	err := dbus.Store([]any{variant.Value()}, &v)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
 }

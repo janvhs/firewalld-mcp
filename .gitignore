@@ -1,10 +1,5 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# Go outputs
+/firewalld-mcp
 
-# Virtual environments
-.venv
+# Nix build outputs
+/result

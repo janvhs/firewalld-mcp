@@ -17,7 +17,8 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/janvhs/firewalld-mcp/internal/firewalld"
@@ -31,9 +32,13 @@ var (
 )
 
 func main() {
+	out := flag.CommandLine.Output()
+
 	flag.Parse()
+
 	if err := mainE(); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(out, err)
+		os.Exit(1)
 	}
 }
 

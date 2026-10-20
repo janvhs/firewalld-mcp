@@ -49,6 +49,7 @@
       builtins.mapAttrs (system: pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [
+            commitlint
             go
             gopls
           ];

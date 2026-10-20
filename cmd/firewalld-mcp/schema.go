@@ -16,34 +16,34 @@ package main
 
 import "github.com/janvhs/firewalld-mcp/internal/firewalld"
 
-type GetDefaultZoneResp struct {
+type GetDefaultZoneResponse struct {
 	DefaultZone string
 }
 
-type GetActiveZonesResp struct {
+type GetActiveZonesResponse struct {
 	ActiveZones []string
 }
 
-type GetServicesForZoneArgs struct {
+type GetServicesForZoneArguments struct {
 	Zone string `json:"zone" jsonschema:"Name of the firewall zone"`
 }
 
-type GetServicesForZoneResp struct {
+type GetServicesForZoneResponse struct {
 	Services []string
 }
 
-type IsDefaultZoneArgs struct {
+type IsDefaultZoneArguments struct {
 	Zone string `json:"zone" jsonschema:"Name of the firewall zone"`
 }
 
-type IsDefaultZoneResp struct {
+type IsDefaultZoneResponse struct {
 	IsDefaultZone bool
 }
 
-type GetServiceInfoArgs struct {
+type GetServiceInfoArguments struct {
 	Service string `json:"service" jsonschema:"Name of the service"`
 }
 
-type GetServiceInfoResp struct {
+type GetServiceInfoResponse struct {
 	Info firewalld.Service
 }

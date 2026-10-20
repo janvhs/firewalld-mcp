@@ -53,12 +53,12 @@ func (m *mcpServer) registerTools() {
 		Name:        "get_default_zone",
 		Title:       "Get default zone",
 		Description: "Get the name of the default firewall zone",
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, *GetDefaultZoneResp, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, *GetDefaultZoneResponse, error) {
 		zone, err := m.client.GetDefaultZone(ctx)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to query default zone: %w", err)
 		}
-		return nil, &GetDefaultZoneResp{
+		return nil, &GetDefaultZoneResponse{
 			DefaultZone: zone,
 		}, nil
 	})
@@ -67,13 +67,13 @@ func (m *mcpServer) registerTools() {
 		Name:        "get_active_zones",
 		Title:       "Get active zones",
 		Description: "Get the names of all currently active firewall zones",
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, *GetActiveZonesResp, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, *GetActiveZonesResponse, error) {
 		zones, err := m.client.GetActiveZones(ctx)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to query active zones: %w", err)
 		}
 
-		return nil, &GetActiveZonesResp{
+		return nil, &GetActiveZonesResponse{
 			ActiveZones: zones,
 		}, nil
 	})
@@ -82,13 +82,13 @@ func (m *mcpServer) registerTools() {
 		Name:        "get_services_for_zone",
 		Title:       "Get services for zone",
 		Description: "Get all allowed services of a firewall zone",
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServicesForZoneArgs) (*mcp.CallToolResult, *GetServicesForZoneResp, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServicesForZoneArguments) (*mcp.CallToolResult, *GetServicesForZoneResponse, error) {
 		services, err := m.client.GetServices(ctx, args.Zone)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to query services for zone %q: %w", args.Zone, err)
 		}
 
-		return nil, &GetServicesForZoneResp{
+		return nil, &GetServicesForZoneResponse{
 			Services: services,
 		}, nil
 	})
@@ -97,13 +97,13 @@ func (m *mcpServer) registerTools() {
 		Name:        "is_default_zone",
 		Title:       "Is default zone",
 		Description: "Check whether the specified firewall zone is the default zone",
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, args IsDefaultZoneArgs) (*mcp.CallToolResult, *IsDefaultZoneResp, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args IsDefaultZoneArguments) (*mcp.CallToolResult, *IsDefaultZoneResponse, error) {
 		defaultZone, err := m.client.GetDefaultZone(ctx)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to query default zone: %w", err)
 		}
 
-		return nil, &IsDefaultZoneResp{
+		return nil, &IsDefaultZoneResponse{
 			IsDefaultZone: args.Zone == defaultZone,
 		}, nil
 	})
@@ -114,13 +114,13 @@ func (m *mcpServer) registerTools() {
 		Description: "Get information on the specified service, including its name, description, ports, " +
 			"destination addresses, protocols and source ports. When a service contains items in the includes " +
 			"field, you need to request data for each listed include.",
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServiceInfoArgs) (*mcp.CallToolResult, *GetServiceInfoResp, error) {
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServiceInfoArguments) (*mcp.CallToolResult, *GetServiceInfoResponse, error) {
 		service, err := m.client.GetServiceInfo(ctx, args.Service)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to query info for service %q: %w", args.Service, err)
 		}
 
-		return nil, &GetServiceInfoResp{
+		return nil, &GetServiceInfoResponse{
 			Info: service,
 		}, nil
 	})

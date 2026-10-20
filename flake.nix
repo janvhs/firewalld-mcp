@@ -36,7 +36,7 @@
               description = "MCP server to give AI assistants insights into the firewalld configuration";
               homepage = "https://github.com/janvhs/firewalld-mcp";
               license = pkgs.lib.licenses.asl20;
-              mainProgram = "firewalld-cmd";
+              mainProgram = "firewalld-mcp";
             };
           };
 

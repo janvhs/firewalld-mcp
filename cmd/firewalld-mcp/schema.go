@@ -17,11 +17,11 @@ package main
 import "github.com/janvhs/firewalld-mcp/internal/firewalld"
 
 type GetDefaultZoneResponse struct {
-	DefaultZone string `json:"default_zone"`
+	DefaultZone string `json:"default_zone" jsonschema:"Name of the default firewall zone"`
 }
 
 type GetActiveZonesResponse struct {
-	ActiveZones []string `json:"active_zones"`
+	ActiveZones []string `json:"active_zones" jsonschema:"Names of all currently active firewall zones"`
 }
 
 type GetServicesForZoneArguments struct {
@@ -29,7 +29,7 @@ type GetServicesForZoneArguments struct {
 }
 
 type GetServicesForZoneResponse struct {
-	Services []string `json:"services"`
+	Services []string `json:"services" jsonschema:"Names of the services allowed in the zone"`
 }
 
 type IsDefaultZoneArguments struct {
@@ -37,7 +37,7 @@ type IsDefaultZoneArguments struct {
 }
 
 type IsDefaultZoneResponse struct {
-	IsDefaultZone bool `json:"is_default_zone"`
+	IsDefaultZone bool `json:"is_default_zone" jsonschema:"Whether the requested zone is the default zone"`
 }
 
 type GetServiceInfoArguments struct {
@@ -45,28 +45,28 @@ type GetServiceInfoArguments struct {
 }
 
 type GetServiceInfoResponse struct {
-	Info Service `json:"info"`
+	Info Service `json:"info" jsonschema:"Definition of the requested service"`
 }
 
 type Port struct {
-	Port     string `json:"port"`
-	Protocol string `json:"protocol"`
+	Port     string `json:"port" jsonschema:"Port number or port range such as 22 or 6800-7568"`
+	Protocol string `json:"protocol" jsonschema:"Transport protocol of the port. The value can either be tcp, udp, sctp or dccp"`
 }
 
 type Destination struct {
-	IPFamily  string `json:"ip_family"`
-	IPAddress string `json:"ip_address"`
+	IPFamily  string `json:"ip_family" jsonschema:"IP family of the destination network. The value can either be ipv4 or ipv6"`
+	IPAddress string `json:"ip_address" jsonschema:"Address of the destination network. Can be a plain IP address or network IP address (optional with /mask). Hostnames are allowed but discouraged, since they are resolved only when the service is activated"`
 }
 
 type Service struct {
-	Name        string        `json:"name"`
-	Short       string        `json:"short"`
-	Description string        `json:"description"`
-	Ports       []Port        `json:"ports"`
-	Destination []Destination `json:"destination"`
-	Protocols   []string      `json:"protocols"`
-	SourcePorts []Port        `json:"source_ports"`
-	Includes    []string      `json:"includes"`
+	Name        string        `json:"name" jsonschema:"Name the service is known by to firewalld"`
+	Short       string        `json:"short" jsonschema:"Human readable name of the service. Show this when talking about a service"`
+	Description string        `json:"description" jsonschema:"Description of the service"`
+	Ports       []Port        `json:"ports" jsonschema:"Ports the service matches. An entry with an empty port only matches the protocol"`
+	Destination []Destination `json:"destination" jsonschema:"Destination network the service matches. Analogous to --destination in iptables and ip6tables. At most one entry per IP family"`
+	Protocols   []string      `json:"protocols" jsonschema:"Protocols the service matches. Values come from /etc/protocols and can be specified by name or number"`
+	SourcePorts []Port        `json:"source_ports" jsonschema:"Ports the service matches as the source port"`
+	Includes    []string      `json:"includes" jsonschema:"Further services the service includes. Request each of them separately"`
 }
 
 func newService(service firewalld.Service) Service {

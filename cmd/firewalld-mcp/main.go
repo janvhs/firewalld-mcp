@@ -47,7 +47,7 @@ func mainE() error {
 
 	bus, err := dbus.ConnectSystemBus()
 	if err != nil {
-		return err
+		return fmt.Errorf("connect system bus: %w", err)
 	}
 	defer func() { _ = bus.Close() }()
 

@@ -50,8 +50,13 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             commitlint
+            delve
             go
+            go-tools
             gopls
+            gosec
+            gotools
+            govulncheck
           ];
         };
       })

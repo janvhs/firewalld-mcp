@@ -16,11 +16,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"runtime/debug"
+	"syscall"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/janvhs/firewalld-mcp/internal/firewalld"
@@ -94,7 +97,8 @@ func main() {
 }
 
 func mainE() error {
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	bus, err := dbus.ConnectSystemBus()
 	if err != nil {
@@ -104,7 +108,7 @@ func mainE() error {
 
 	server := newMCPServer(firewalld.NewDBusClient(bus))
 
-	if err := server.Run(ctx, &mcp.StdioTransport{}); err != nil {
+	if err := server.Run(ctx, &mcp.StdioTransport{}); err != nil && !errors.Is(err, context.Canceled) {
 		return err
 	}
 

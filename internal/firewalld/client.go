@@ -15,10 +15,14 @@ package firewalld
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/godbus/dbus/v5"
 )
+
+// ErrIPC is the error returned when the communication to D-Bus failed.
+var ErrIPC = errors.New("firewalld: failed D-Bus communication")
 
 const (
 	dbusDest              = "org.fedoraproject.FirewallD1"
@@ -74,7 +78,7 @@ func (c *dbusClient) GetDefaultZone(ctx context.Context) (string, error) {
 
 	var zone string
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&zone); err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	return zone, nil
@@ -87,7 +91,7 @@ func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
 	// its assigned interfaces and sources. Only the zone names are needed.
 	var activeZones map[string]any
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&activeZones); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	zones := make([]string, 0, len(activeZones))
@@ -103,7 +107,7 @@ func (c *dbusClient) GetServices(ctx context.Context, zone string) ([]string, er
 
 	var services []string
 	if err := c.object.CallWithContext(ctx, method, 0, zone).Store(&services); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	return services, nil
@@ -115,7 +119,7 @@ func (c *dbusClient) GetServiceInfo(ctx context.Context, service string) (Servic
 	// getServiceSettings2 returns a{sv}.
 	var settings map[string]dbus.Variant
 	if err := c.object.CallWithContext(ctx, method, 0, service).Store(&settings); err != nil {
-		return Service{}, err
+		return Service{}, fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	return serviceFromSettings(service, settings)
@@ -168,7 +172,7 @@ func storeVariantMap[T any](m map[string]dbus.Variant, key string, fallback T) (
 
 	var v T
 	if err := dbus.Store([]any{variant.Value()}, &v); err != nil {
-		return fallback, fmt.Errorf("firewalld: unexpected D-Bus signature %q for field %q: %w", variant.Signature(), key, err)
+		return fallback, fmt.Errorf("%w: firewalld: unexpected D-Bus signature %q for field %q: %w", ErrIPC, variant.Signature(), key, err)
 	}
 
 	return v, nil

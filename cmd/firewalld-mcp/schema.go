@@ -17,11 +17,11 @@ package main
 import "github.com/janvhs/firewalld-mcp/internal/firewalld"
 
 type GetDefaultZoneResponse struct {
-	DefaultZone string
+	DefaultZone string `json:"default_zone"`
 }
 
 type GetActiveZonesResponse struct {
-	ActiveZones []string
+	ActiveZones []string `json:"active_zones"`
 }
 
 type GetServicesForZoneArguments struct {
@@ -29,7 +29,7 @@ type GetServicesForZoneArguments struct {
 }
 
 type GetServicesForZoneResponse struct {
-	Services []string
+	Services []string `json:"services"`
 }
 
 type IsDefaultZoneArguments struct {
@@ -37,7 +37,7 @@ type IsDefaultZoneArguments struct {
 }
 
 type IsDefaultZoneResponse struct {
-	IsDefaultZone bool
+	IsDefaultZone bool `json:"is_default_zone"`
 }
 
 type GetServiceInfoArguments struct {
@@ -45,28 +45,28 @@ type GetServiceInfoArguments struct {
 }
 
 type GetServiceInfoResponse struct {
-	Info Service
+	Info Service `json:"info"`
 }
 
 type Port struct {
-	Port     string
-	Protocol string
+	Port     string `json:"port"`
+	Protocol string `json:"protocol"`
 }
 
 type Destination struct {
-	IPFamily  string
-	IPAddress string
+	IPFamily  string `json:"ip_family"`
+	IPAddress string `json:"ip_address"`
 }
 
 type Service struct {
-	Name        string
-	Short       string
-	Description string
-	Ports       []Port
-	Destination []Destination
-	Protocols   []string
-	SourcePorts []Port
-	Includes    []string
+	Name        string        `json:"name"`
+	Short       string        `json:"short"`
+	Description string        `json:"description"`
+	Ports       []Port        `json:"ports"`
+	Destination []Destination `json:"destination"`
+	Protocols   []string      `json:"protocols"`
+	SourcePorts []Port        `json:"source_ports"`
+	Includes    []string      `json:"includes"`
 }
 
 func newService(service firewalld.Service) Service {

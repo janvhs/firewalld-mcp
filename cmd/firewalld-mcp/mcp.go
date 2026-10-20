@@ -81,7 +81,7 @@ func (m *mcpServer) registerTools() {
 	mcp.AddTool(m.server, &mcp.Tool{
 		Name:        "get_services_for_zone",
 		Title:       "Get services for zone",
-		Description: "Get all allowed services of a firewall zone",
+		Description: "Get all allowed services in the runtime configuration of a firewall zone",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServicesForZoneArguments) (*mcp.CallToolResult, *GetServicesForZoneResponse, error) {
 		services, err := m.client.GetServices(ctx, args.Zone)
 		if err != nil {
@@ -111,9 +111,11 @@ func (m *mcpServer) registerTools() {
 	mcp.AddTool(m.server, &mcp.Tool{
 		Name:  "get_service_info",
 		Title: "Get service info",
-		Description: "Get information on the specified service, including its name, description, ports, " +
-			"destination addresses, protocols and source ports. When a service contains items in the includes " +
-			"field, you need to request data for each listed include.",
+		Description: "Get information on the specified service from the runtime configuration, including its " +
+			"name, short human-readable name, description, ports, destination addresses, protocols and source " +
+			"ports. Show the short name when talking about a service. A port entry with an empty port only " +
+			"matches the protocol. When a service contains items in the includes field, you need to request " +
+			"data for each listed include.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, args GetServiceInfoArguments) (*mcp.CallToolResult, *GetServiceInfoResponse, error) {
 		service, err := m.client.GetServiceInfo(ctx, args.Service)
 		if err != nil {

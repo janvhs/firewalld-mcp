@@ -45,5 +45,71 @@ type GetServiceInfoArguments struct {
 }
 
 type GetServiceInfoResponse struct {
-	Info firewalld.Service
+	Info Service
+}
+
+type Port struct {
+	Port     string
+	Protocol string
+}
+
+type Destination struct {
+	IPFamily  string
+	IPAddress string
+}
+
+type Service struct {
+	Name        string
+	Short       string
+	Description string
+	Ports       []Port
+	Destination []Destination
+	Protocols   []string
+	SourcePorts []Port
+	Includes    []string
+}
+
+func newService(service firewalld.Service) Service {
+	return Service{
+		Name:        service.Name,
+		Short:       service.Short,
+		Description: service.Description,
+		Ports:       newPorts(service.Ports),
+		Destination: newDestinations(service.Destination),
+		Protocols:   service.Protocols,
+		SourcePorts: newPorts(service.SourcePorts),
+		Includes:    service.Includes,
+	}
+}
+
+func newPorts(ports []firewalld.Port) []Port {
+	if ports == nil {
+		return nil
+	}
+
+	r := make([]Port, 0, len(ports))
+	for _, port := range ports {
+		r = append(r, Port{
+			Port:     port.Port,
+			Protocol: port.Protocol,
+		})
+	}
+
+	return r
+}
+
+func newDestinations(destinations []firewalld.Destination) []Destination {
+	if destinations == nil {
+		return nil
+	}
+
+	r := make([]Destination, 0, len(destinations))
+	for _, destination := range destinations {
+		r = append(r, Destination{
+			IPFamily:  destination.IPFamily,
+			IPAddress: destination.IPAddress,
+		})
+	}
+
+	return r
 }

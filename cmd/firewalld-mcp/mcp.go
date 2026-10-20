@@ -121,7 +121,7 @@ func (m *mcpServer) registerTools() {
 		}
 
 		return nil, &GetServiceInfoResponse{
-			Info: service,
+			Info: newService(service),
 		}, nil
 	})
 }

@@ -78,6 +78,7 @@ func NewDBusClient(bus *dbus.Conn) FirewalldClient {
 func (c *dbusClient) GetDefaultZone(ctx context.Context) (string, error) {
 	method := dbusFirewallInterface + ".getDefaultZone"
 
+	// getDefaultZone returns s.
 	var zone string
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&zone); err != nil {
 		return "", fmt.Errorf("%w: %w", ErrIPC, err)
@@ -107,6 +108,7 @@ func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
 func (c *dbusClient) GetServices(ctx context.Context, zone string) ([]string, error) {
 	method := dbusZoneInterface + ".getServices"
 
+	// getServices returns as.
 	var services []string
 	if err := c.object.CallWithContext(ctx, method, 0, zone).Store(&services); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrIPC, err)

@@ -21,16 +21,24 @@
   outputs = inputs: {
     packages =
       builtins.mapAttrs (
-        system: pkgs: {
+        system: pkgs: let
+          version = "0.1.0";
+          commitSHA = inputs.self.rev or inputs.self.dirtyRev or "";
+        in {
           firewalld-mcp = pkgs.buildGoModule {
             pname = "firewalld-mcp";
-            version = "0.1.0";
+            inherit version;
 
             src = ./.;
 
             subPackages = ["cmd/firewalld-mcp"];
 
             vendorHash = "sha256-Apu/EftiTBBnf/loFGlANWhhs/BLY5oCKBplw1Jhzmg=";
+
+            ldflags = [
+              "-X main.Version=${version}"
+              "-X main.CommitSHA=${commitSHA}"
+            ];
 
             meta = {
               description = "MCP server to give AI assistants insights into the firewalld configuration";

@@ -4,6 +4,7 @@ go 1.26.5
 
 require (
 	github.com/godbus/dbus/v5 v5.2.2
+	github.com/google/go-cmp v0.7.0
 	github.com/modelcontextprotocol/go-sdk v1.7.0
 )
 

@@ -18,23 +18,74 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"runtime/debug"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/janvhs/firewalld-mcp/internal/firewalld"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+const shaLen = 7
+
 var (
-	ProgramName = "firewalld-mcp"
-	MCPName     = "firewalld"
-	Version     = "0.1.0"
+	// MCPName is the name this server announces to MCP clients. It can be set
+	// via ldflags when building.
+	MCPName = "firewalld"
+
+	// Version contains the application version number. It's set via ldflags
+	// when building.
+	Version = ""
+
+	// CommitSHA contains the SHA of the commit that this application was built
+	// against. It's set via ldflags when building.
+	CommitSHA = ""
 )
+
+var flagVersion bool
+
+func init() {
+	flag.BoolVar(&flagVersion, "version", false, "Print version and exit")
+
+	if Version == "" {
+		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
+			Version = info.Main.Version
+		} else {
+			Version = "unknown (built from source)"
+		}
+	}
+}
+
+func makeUsage(out io.Writer, name string) func() {
+	return func() {
+		fmt.Fprintf(out, "Usage: %s [options...]\n\nOptions:\n", name)
+		flag.PrintDefaults()
+	}
+}
 
 func main() {
 	out := flag.CommandLine.Output()
+	name := flag.CommandLine.Name()
 
+	flag.Usage = makeUsage(out, name)
 	flag.Parse()
+
+	if flagVersion {
+		versionString := fmt.Sprintf("%s %s", name, Version)
+		if len(CommitSHA) >= shaLen {
+			versionString += " (" + CommitSHA[:shaLen] + ")"
+		}
+
+		fmt.Println(versionString)
+		return
+	}
+
+	if flag.NArg() > 0 {
+		fmt.Fprintf(out, "argument provided but not expected: %q\n", flag.Arg(0))
+		flag.Usage()
+		os.Exit(2)
+	}
 
 	if err := mainE(); err != nil {
 		fmt.Fprintln(out, err)

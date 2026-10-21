@@ -22,7 +22,7 @@
     packages =
       builtins.mapAttrs (
         system: pkgs: let
-          version = "0.1.0";
+          version = "0.2.0";
           commitSHA = inputs.self.rev or inputs.self.dirtyRev or "";
         in {
           firewalld-mcp = pkgs.buildGoModule {

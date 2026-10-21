@@ -21,10 +21,13 @@
   outputs = inputs: {
     packages =
       builtins.mapAttrs (
-        system: pkgs: {
+        system: pkgs: let
+          version = "0.1.0";
+          commitSHA = inputs.self.rev or inputs.self.dirtyRev or "";
+        in {
           firewalld-mcp = pkgs.buildGoModule {
             pname = "firewalld-mcp";
-            version = "0.1.0";
+            inherit version;
 
             src = ./.;
 
@@ -32,11 +35,16 @@
 
             vendorHash = "sha256-Apu/EftiTBBnf/loFGlANWhhs/BLY5oCKBplw1Jhzmg=";
 
+            ldflags = [
+              "-X main.Version=${version}"
+              "-X main.CommitSHA=${commitSHA}"
+            ];
+
             meta = {
               description = "MCP server to give AI assistants insights into the firewalld configuration";
               homepage = "https://github.com/janvhs/firewalld-mcp";
               license = pkgs.lib.licenses.asl20;
-              mainProgram = "firewalld-cmd";
+              mainProgram = "firewalld-mcp";
             };
           };
 
@@ -49,8 +57,14 @@
       builtins.mapAttrs (system: pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [
+            commitlint
+            delve
             go
+            go-tools
             gopls
+            gosec
+            gotools
+            govulncheck
           ];
         };
       })

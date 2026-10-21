@@ -11,13 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// Package firewalld is a client for the firewalld D-Bus API.
 package firewalld
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/godbus/dbus/v5"
 )
+
+// ErrIPC is the error returned when the communication to D-Bus failed.
+var ErrIPC = errors.New("firewalld: failed D-Bus communication")
 
 const (
 	dbusDest              = "org.fedoraproject.FirewallD1"
@@ -71,9 +78,10 @@ func NewDBusClient(bus *dbus.Conn) FirewalldClient {
 func (c *dbusClient) GetDefaultZone(ctx context.Context) (string, error) {
 	method := dbusFirewallInterface + ".getDefaultZone"
 
+	// getDefaultZone returns s.
 	var zone string
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&zone); err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	return zone, nil
@@ -86,7 +94,7 @@ func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
 	// its assigned interfaces and sources. Only the zone names are needed.
 	var activeZones map[string]any
 	if err := c.object.CallWithContext(ctx, method, 0).Store(&activeZones); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	zones := make([]string, 0, len(activeZones))
@@ -100,9 +108,10 @@ func (c *dbusClient) GetActiveZones(ctx context.Context) ([]string, error) {
 func (c *dbusClient) GetServices(ctx context.Context, zone string) ([]string, error) {
 	method := dbusZoneInterface + ".getServices"
 
+	// getServices returns as.
 	var services []string
 	if err := c.object.CallWithContext(ctx, method, 0, zone).Store(&services); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrIPC, err)
 	}
 
 	return services, nil
@@ -114,20 +123,40 @@ func (c *dbusClient) GetServiceInfo(ctx context.Context, service string) (Servic
 	// getServiceSettings2 returns a{sv}.
 	var settings map[string]dbus.Variant
 	if err := c.object.CallWithContext(ctx, method, 0, service).Store(&settings); err != nil {
+		return Service{}, fmt.Errorf("%w: %w", ErrIPC, err)
+	}
+
+	return serviceFromSettings(service, settings)
+}
+
+func serviceFromSettings(name string, settings map[string]dbus.Variant) (Service, error) {
+	info := Service{Name: name}
+
+	var err error
+	if info.Short, err = storeVariantMap(settings, "short", ""); err != nil {
+		return Service{}, err
+	}
+	if info.Description, err = storeVariantMap(settings, "description", ""); err != nil {
+		return Service{}, err
+	}
+	if info.Ports, err = storeVariantMap(settings, "ports", []Port{}); err != nil {
+		return Service{}, err
+	}
+	if info.Protocols, err = storeVariantMap(settings, "protocols", []string{}); err != nil {
+		return Service{}, err
+	}
+	if info.SourcePorts, err = storeVariantMap(settings, "source_ports", []Port{}); err != nil {
+		return Service{}, err
+	}
+	if info.Includes, err = storeVariantMap(settings, "includes", []string{}); err != nil {
 		return Service{}, err
 	}
 
-	info := Service{Name: service}
-
-	info.Short = mustStoreVariantMap(settings, "short", "")
-	info.Description = mustStoreVariantMap(settings, "description", "")
-	info.Ports = mustStoreVariantMap(settings, "ports", []Port{})
-	info.Protocols = mustStoreVariantMap(settings, "protocols", []string{})
-	info.SourcePorts = mustStoreVariantMap(settings, "source_ports", []Port{})
-	info.Includes = mustStoreVariantMap(settings, "includes", []string{})
-
+	rawDestination, err := storeVariantMap(settings, "destination", map[string]string{})
+	if err != nil {
+		return Service{}, err
+	}
 	destination := make([]Destination, 0)
-	rawDestination := mustStoreVariantMap(settings, "destination", map[string]string{})
 	for family, address := range rawDestination {
 		destination = append(destination, Destination{
 			IPFamily:  family,
@@ -139,17 +168,16 @@ func (c *dbusClient) GetServiceInfo(ctx context.Context, service string) (Servic
 	return info, nil
 }
 
-func mustStoreVariantMap[T any](m map[string]dbus.Variant, key string, fallback T) T {
+func storeVariantMap[T any](m map[string]dbus.Variant, key string, fallback T) (T, error) {
 	variant, ok := m[key]
 	if !ok {
-		return fallback
+		return fallback, nil
 	}
 
 	var v T
-	err := dbus.Store([]any{variant.Value()}, &v)
-	if err != nil {
-		panic(err)
+	if err := dbus.Store([]any{variant.Value()}, &v); err != nil {
+		return fallback, fmt.Errorf("%w: firewalld: unexpected D-Bus signature %q for field %q: %w", ErrIPC, variant.Signature(), key, err)
 	}
 
-	return v
+	return v, nil
 }

@@ -33,7 +33,7 @@
 
             subPackages = ["cmd/firewalld-mcp"];
 
-            vendorHash = "sha256-Apu/EftiTBBnf/loFGlANWhhs/BLY5oCKBplw1Jhzmg=";
+            vendorHash = "sha256-MVQljFL72bqwaCh2ECNRBHEQt6bfam2aF8KiNccLnCY=";
 
             ldflags = [
               "-X main.Version=${version}"
